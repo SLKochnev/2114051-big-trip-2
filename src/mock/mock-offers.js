@@ -28,6 +28,10 @@ const mockOffers = [
         price: 120
       }
     ]
+  },
+  {
+    type: 'taxi',
+    'offers': []
   }
 ];
 

@@ -9,13 +9,16 @@ import { render, RenderPosition } from '../render.js';
 export default class BoardPresenter {
   tripEventsView = new TripEventsView();
 
-  constructor({ boardContainer, tripInfoContainer, filterContainer }) {
+  constructor({ boardContainer, tripInfoContainer, filterContainer, pointModel }) {
     this.boardContainer = boardContainer;
     this.tripInfoContainer = tripInfoContainer;
     this.filterContainer = filterContainer;
+    this.pointModel = pointModel;
   }
 
   init() {
+    this.boardPointModules = [...this.pointModel.getPoint()];
+
     render(new TripInfoView(), this.tripInfoContainer, RenderPosition.AFTERBEGIN);
     render(new FilterView(), this.filterContainer);
     render(this.tripEventsView, this.boardContainer);
@@ -28,8 +31,8 @@ export default class BoardPresenter {
 
     render(new EditPointView(), pointsList);
 
-    for (let i = 1; i <= 3; i++) {
-      render(new PointView(), pointsList);
+    for (let i = 1; i <= this.boardPointModules.length; i++) {
+      render(new PointView({point: this.boardPointModules[i]}), pointsList);
     }
   }
 }
