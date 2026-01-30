@@ -5,21 +5,26 @@ import PointView from '../view/point-view.js';
 import TripInfoView from '../view/trip-info-view.js';
 import FilterView from '../view/filter-view.js';
 import { render, RenderPosition } from '../framework/render.js';
-import { BLANK_POINT } from '../const.js';
 
 export default class BoardPresenter {
+  #boardContainer = null;
+  #tripInfoContainer = null;
+  #filterContainer = null;
+  #pointModel = null;
+  #boardPointModules = [];
+
   tripEventsView = new TripEventsView();
 
   constructor({ boardContainer, tripInfoContainer, filterContainer, pointModel }) {
-    this.boardContainer = boardContainer;
-    this.tripInfoContainer = tripInfoContainer;
-    this.filterContainer = filterContainer;
-    this.pointModel = pointModel;
+    this.#boardContainer = boardContainer;
+    this.#tripInfoContainer = tripInfoContainer;
+    this.#filterContainer = filterContainer;
+    this.#pointModel = pointModel;
   }
 
   #openEditForm(point, pointElement) {
     const editForm = new EditPointView({ point });
-    const editFormElement = editForm.getElement();
+    const editFormElement = editForm.element;
     const closeButton = editFormElement.querySelector('.event__rollup-btn');
 
     if (closeButton) {
@@ -33,9 +38,9 @@ export default class BoardPresenter {
 
 
   render() {
-    render(new TripInfoView(), this.tripInfoContainer, RenderPosition.AFTERBEGIN);
-    render(new FilterView(), this.filterContainer);
-    render(this.tripEventsView, this.boardContainer);
+    render(new TripInfoView(), this.#tripInfoContainer, RenderPosition.AFTERBEGIN);
+    render(new FilterView(), this.#filterContainer);
+    render(this.tripEventsView, this.#boardContainer);
 
     const tripEventsElement = this.tripEventsView.element;
 
@@ -43,29 +48,31 @@ export default class BoardPresenter {
 
     const pointsList = tripEventsElement.querySelector('.trip-events__list');
 
-    render(new EditPointView({point: BLANK_POINT}), pointsList);
-
-    for (const point of this.boardPointModules) {
-      const pointView = new PointView(point);
-      const pointElement = pointView.element;
-
-      pointView.setEditClickHandler(() => {
-        this.#openEditForm(point, pointElement);
-      });
-
-      render(pointView, pointsList);
+    for (const point of this.#boardPointModules) {
+      this.#renderPoint(point, pointsList);
     }
   }
 
+  #renderPoint(point, container) {
+    const pointView = new PointView(point);
+    const pointElement = pointView.element;
+
+    pointView.setEditClickHandler(() => {
+      this.#openEditForm(point, pointElement);
+    });
+
+    render(pointView, container);
+  }
+
   init() {
-    const rawPoints = this.pointModel.getPoint();
+    const rawPoints = this.#pointModel.points;
     this.boardPointModules = [];
 
     for (const rawPoint of rawPoints) {
-      const fullPointInfo = this.pointModel.getFullPointInfo(rawPoint);
+      const fullPointInfo = this.#pointModel.getFullPointInfo(rawPoint);
 
       if (fullPointInfo) {
-        this.boardPointModules.push(fullPointInfo);
+        this.#boardPointModules.push(fullPointInfo);
       }
     }
 
